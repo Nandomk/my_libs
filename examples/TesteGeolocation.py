@@ -2,7 +2,7 @@
 import sys
 import os 
 
-sys.path.append("C:/Projetos/python/MeusTestes/my_libs/")
+sys.path.append(os.path.abspath('..'))
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 cwd = os.getcwd()
@@ -18,5 +18,5 @@ lon2 = -74.005974
 distance_km = calculate_distantece(lat1, lon1, lat2, lon2)
 print(f"Distância entre São Paulo e Nova York é de {distance_km:.2f} km")
 
-print (dir_path)
-print(cwd)
+
+
