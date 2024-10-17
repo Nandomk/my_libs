@@ -2,64 +2,52 @@
 import pandas as pd
 import json
 
-
-
-#for ind in df.index:
-#    print(df['id'][ind], df['nome'][ind], df['tipoPessoa'][ind])
-#print(df)
 def ConverterJsonToExcel(fileIn, fileOut):
-    f = open(fileIn, encoding="utf8")
-    data = json.load(f)
-    f.close()
+    """
+    Converte um arquivo JSON contendo uma lista de pessoas em um arquivo Excel.
+    
+    :param fileIn: Caminho do arquivo JSON de entrada.
+    :param fileOut: Caminho do arquivo Excel de saída.
+    """
+    with open(fileIn, encoding="utf8") as f:
+        data = json.load(f)
+    
     df = pd.DataFrame(data['pessoas'])
     df.to_excel(fileOut, index=False)
 
 def ConvertCsvToExcel(fileIn, fileOut):
-    # reading the csv file
-    cvsDataframe = pd.read_csv(fileIn)
+    """
+    Converte um arquivo CSV em um arquivo Excel, aplicando ajustes automáticos na largura das colunas.
+    
+    :param fileIn: Caminho do arquivo CSV de entrada.
+    :param fileOut: Caminho do arquivo Excel de saída.
+    """
+    # Lê o arquivo CSV
+    df = pd.read_csv(fileIn)
 
-    cvsDataframe2 = pd.read_csv(fileIn)
+    # Cria um arquivo Excel de saída com a folha "Histórico"
+    with pd.ExcelWriter(fileOut, engine='openpyxl') as resultExcelFile:
+        df.to_excel(resultExcelFile, sheet_name="Histórico", index=False)
 
-    # creating an output excel file
-    resultExcelFile = pd.ExcelWriter(fileOut)
+        # Acessa o objeto do workbook e da worksheet
+        workbook = resultExcelFile.book
+        worksheet = resultExcelFile.sheets["Histórico"]
 
-    # converting the csv file to an excel file
-    #cvsDataframe.to_excel(resultExcelFile,sheet_name="Cadastro", index=False)
+        # Ajusta automaticamente a largura das colunas
+        for col in worksheet.columns:
+            max_length = 0
+            column = col[0].column_letter  # Pega o nome da coluna (letra)
+            for cell in col:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = (max_length + 2) * 1.2
+            worksheet.column_dimensions[column].width = adjusted_width
 
-    cvsDataframe2.to_excel(resultExcelFile,sheet_name="Histórico", index=False)
+    print(f"Arquivo Excel '{fileOut}' criado com sucesso.")
 
-    workbook = resultExcelFile.book
-    #worksheetCadastro = resultExcelFile.sheets["Cadastro"]
-    worksheetHistorico = resultExcelFile.sheets["Histórico"]
-
-    #worksheetCadastro.auto_filter.ref='A:Z'
-    worksheetHistorico.auto_filter.ref='A:Z'
-
-    # for col in worksheetCadastro.columns:
-    #     max_length = 0
-    #     column = col[0].column_letter # Get the column name
-    #     for cell in col:
-    #         try: # Necessary to avoid error on empty cells
-    #             if len(str(cell.value)) > max_length:
-    #                 max_length = len(str(cell.value))
-    #         except:
-    #             pass
-    #     adjusted_width = (max_length + 2) * 1.2
-    #     worksheetCadastro.column_dimensions[column].width = adjusted_width
-
-    for col in worksheetHistorico.columns:
-        max_length = 0
-        column = col[0].column_letter # Get the column name
-        for cell in col:
-            try: # Necessary to avoid error on empty cells
-                if len(str(cell.value)) > max_length:
-                    max_length = len(str(cell.value))
-            except:
-                pass
-        adjusted_width = (max_length + 2) * 1.2
-        worksheetHistorico.column_dimensions[column].width = adjusted_width
-   
-    # saving the excel file
-    resultExcelFile._save()
-
- 
+# Exemplo de uso:
+# ConverterJsonToExcel('pessoas.json', 'pessoas.xlsx')
+# ConvertCsvToExcel('dados.csv', 'dados.xlsx')
